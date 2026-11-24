@@ -1,0 +1,122 @@
+title_name = "Shin Sangoku Musou 4 Special"
+title_id = "4B4F07D1"
+hash = ["18955F07584E77FB"]
+
+[[patch]]
+  name = "1P Exclusive Permanent Attack (16x Axe)"
+  author = "cr7xiaoyu"
+  is_enabled = true
+
+  # 1. 判定攻击者 (r29) 是否为 1P 结构体基址 0x82499A60 (0x824A0000 - 0x65A0)
+  [[patch.be32]]
+    address = 0x820DF4D8
+    value = 0x3D7D7DB6   # subis r11, r29, 0x824A
+
+  [[patch.be32]]
+    address = 0x820DF4DC
+    value = 0x2F0B9A60   # cmpwi cr6, r11, -0x65A0
+
+  [[patch.be32]]
+    address = 0x820DF4E0
+    value = 0x409A000C   # bne cr6, +0x0C (非1P直接跳至 0x820DF4EC)
+
+  # 2. 1P 专属常驻攻击力倍率（无需吃战神斧，直接替换下方数值调整倍率）:
+  # 0x57FF083C = 2倍攻击 (原版战神斧, 伤害 × 2, slwi r31, r31, 1)
+  # 0x57FF103A = 4倍攻击 (伤害 × 4, slwi r31, r31, 2)
+  # 0x57FF1838 = 8倍攻击 (伤害 × 8, slwi r31, r31, 3)
+  # 0x57FF2036 = 16倍攻击 (伤害 × 16, slwi r31, r31, 4)
+  [[patch.be32]]
+    address = 0x820DF4E4
+    value = 0x57FF2036
+
+[[patch]]
+  name = "1P Exclusive Permanent Defense (8x Armor)"
+  author = "cr7xiaoyu"
+  is_enabled = true
+
+  # 1. 构造 1P 战斗动态结构体基址 0x82499A60 (0x824A0000 - 0x65A0)
+  [[patch.be32]]
+    address = 0x820DF4EC
+    value = 0x3D60824A   # lis r11, 0x824A
+
+  [[patch.be32]]
+    address = 0x820DF4F0
+    value = 0x396B9A60   # addi r11, r11, -0x65A0 (r11 = 0x82499A60)
+
+  # 2. 判定受击者 (r26) 是否为 1P，非 1P 直接跳出不减伤
+  [[patch.be32]]
+    address = 0x820DF4F4
+    value = 0x7F1A5800   # cmpw cr6, r26, r11
+
+  [[patch.be32]]
+    address = 0x820DF4F8
+    value = 0x409A0018   # bne cr6, +0x18 (非1P直接跳至 0x820DF510)
+
+  # 3. 1P 专属常驻防御减伤倍率（无需吃战神铠，直接替换下方数值调整倍率）:
+  # 0x7FFF0E70 = 2倍防御 (原版战神铠, 伤害 ÷ 2, srawi r31, r31, 1)
+  # 0x7FFF1670 = 4倍防御 (伤害 ÷ 4, srawi r31, r31, 2)
+  # 0x7FFF1E70 = 8倍防御 (伤害 ÷ 8, srawi r31, r31, 3)
+  [[patch.be32]]
+    address = 0x820DF4FC
+    value = 0x7FFF1E70
+
+[[patch]]
+  name = "1P Exclusive Permanent Speed (40.0f)"
+  author = "cr7xiaoyu"
+  is_enabled = true
+
+  # 1. 构造 1P 战斗动态结构体基址 0x82499A60
+  [[patch.be32]]
+    address = 0x8219F910
+    value = 0x3D60824A   # lis r11, 0x824A
+
+  [[patch.be32]]
+    address = 0x8219F914
+    value = 0x396B9A60   # addi r11, r11, -0x65A0
+
+  # 2. 判定当前角色 (r31) 是否为 1P，非 1P 直接跳转使用原版默认速度
+  [[patch.be32]]
+    address = 0x8219F918
+    value = 0x7F1F5800   # cmpw cr6, r31, r11
+
+  [[patch.be32]]
+    address = 0x8219F91C
+    value = 0x409A000C   # bne cr6, +0x0C (非1P直接跳至 0x8219F928)
+
+  # 3. 1P 专属常驻跑速设置（无需吃神速靴，直接替换下方高16位即可调整速度）:
+  # 0x3D6041A0 = 1.0倍原版神速靴 (20.0f)
+  # 0x3D6041C8 = 1.25倍原版神速靴 (25.0f)
+  # 0x3D6041F0 = 1.5倍原版神速靴 (30.0f)
+  # 0x3D604220 = 2.0倍原版神速靴 (40.0f)
+  [[patch.be32]]
+    address = 0x8219F920
+    value = 0x3D604220   # lis r11, 0x4220 (40.0f)
+
+  [[patch.be32]]
+    address = 0x8219F924
+    value = 0x917F0288   # stw r11, 0x288(r31)
+
+[[patch]]
+    name = "Max All Stats Gain on Pickup (HP, Musou, ATK, DEF)"
+    author = "cr7xiaoyu"
+    is_enabled = true
+
+    # 1. 防御力（吃盾）+16（0x82196D28 - 0x4600 = 0x82192728 -> li r6, 0x16）
+    [[patch.be32]]
+        address = 0x82192728
+        value = 0x38C00010
+
+    # 2. 攻击力（吃剑）+16（0x82196DC0 - 0x4600 = 0x821927C0 -> li r6, 0x16）
+    [[patch.be32]]
+        address = 0x821927C0
+        value = 0x38C00010
+
+    # 3. 体力上限（吃点心）+50（0x82196E58 - 0x4600 = 0x82192858 -> li r7, 0x50）
+    [[patch.be32]]
+        address = 0x82192858
+        value = 0x38E00032
+
+    # 4. 无双上限（吃于吉酒）+50（0x82196F30 - 0x4600 = 0x82192930 -> li r8, 0x50）
+    [[patch.be32]]
+        address = 0x82192930
+        value = 0x39000032

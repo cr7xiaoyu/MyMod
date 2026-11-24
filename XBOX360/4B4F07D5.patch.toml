@@ -1,0 +1,235 @@
+title_name = "Z52M"
+title_id = "4B4F07D5"
+hash = ["37E08FD0C010D5D0"]
+
+[[patch]]
+    name = "全模式100%必偷敌将技能 + 无视前置/跨级限制 + 解除单场1次限制 (极简版)"
+    author = "cr7xiaoyu"
+    is_enabled = true
+
+    # 1. 解除自由模式/特殊模式禁用偷技掩码 (IDA 0x8218CE68 - 0x6E00)
+    [[patch.be32]]
+        address = 0x82186068
+        value = 0x60000000 # nop
+
+    # 2. 解除击破判定缓存未命中拦截 (IDA 0x8218CF00 - 0x6E00)
+    [[patch.be32]]
+        address = 0x82186100
+        value = 0x60000000 # nop
+
+    # 3. 抽中技能后直接跳过全部前置/Lv3/跨级限制与概率判定，直达写入队列 (IDA 0x8218D080 - 0x6E00)
+    [[patch.be32]]
+        address = 0x82186280
+        value = 0x480003F4 # b +0x3F4 (直达 loc_8218D474)
+		
+[[patch]]
+    name = "1P/2P 攻防倍率常驻 10x"
+    desc = "修改 0x3C80XXXX 的末尾4位十六进制可调倍率 (2x=4000, 3x=4040, 4x=4080, 5x=40A0, 10x=4120)"
+    author = "cr7xiaoyu"
+    is_enabled = true
+
+    # 1. 玩家基础攻防倍率常驻 10x (原版: 0x8218ED48~0x8218ED50，已减 0x6E00)
+    [[patch.be32]]
+        address = 0x82187F48
+        value = 0x3C804120  # lis r4, 0x4120 (10.0f，改末尾4位可调基础倍率)
+    [[patch.be32]]
+        address = 0x82187F4C
+        value = 0x90880000  # stw r4, 0(r8)  (写入攻击倍率)
+    [[patch.be32]]
+        address = 0x82187F50
+        value = 0x90880004  # stw r4, 4(r8)  (写入防御倍率)
+
+    # 2. 吃攻击道具时保持 10x (原版: 0x8218EDD0~0x8218EDE0，已减 0x6E00)
+    [[patch.be32]]
+        address = 0x82187FD0
+        value = 0x3C804120  # lis  r4, 0x4120 (10.0f，改末尾4位可调攻击道具倍率)
+    [[patch.be32]]
+        address = 0x82187FD4
+        value = 0x90880000  # stw  r4, 0(r8)
+    [[patch.be32]]
+        address = 0x82187FD8
+        value = 0x812B00BC  # lwz  r9, 0xBC(r11)
+    [[patch.be32]]
+        address = 0x82187FDC
+        value = 0x65240800  # oris r4, r9, 0x800
+    [[patch.be32]]
+        address = 0x82187FE0
+        value = 0x908B00BC  # stw  r4, 0xBC(r11)
+
+    # 3. 吃防御道具时保持 10x (原版: 0x8218EDF0~0x8218EE00，已减 0x6E00)
+    [[patch.be32]]
+        address = 0x82187FF0
+        value = 0x3C804120  # lis  r4, 0x4120 (10.0f，改末尾4位可调防御道具倍率)
+    [[patch.be32]]
+        address = 0x82187FF4
+        value = 0x90880004  # stw  r4, 4(r8)
+    [[patch.be32]]
+        address = 0x82187FF8
+        value = 0x812B00BC  # lwz  r9, 0xBC(r11)
+    [[patch.be32]]
+        address = 0x82187FFC
+        value = 0x65241000  # oris r4, r9, 0x1000
+    [[patch.be32]]
+        address = 0x82188000
+        value = 0x908B00BC  # stw  r4, 0xBC(r11)
+		
+[[patch]]
+    name = "玩家移动速度常驻 4 倍 (无需吃鞋 / 仅1P与2P生效)"
+    desc = "100% 还原 PS3 原版逻辑：仅对 1P/2P 激活草鞋状态并 4 倍速，敌军/友军/小兵全原速"
+    author = "cr7xiaoyu"
+    is_enabled = true
+
+    # 1. 无需吃鞋子道具：紧接在上方 0x82187F50 攻防写入之后，零冲突写入 1P/2P 速度上升状态
+    #    (IDA 0x8218ED54 ~ 0x8218ED5C 减去 0x6E00 = 0x82187F54 ~ 0x82187F5C)
+    [[patch.be32]]
+        address = 0x82187F54
+        value = 0x39400001 # li   r10, 1
+    [[patch.be32]]
+        address = 0x82187F58
+        value = 0x99480011 # stb  r10, 0x11(r8)    (强制开启 1P/2P 速度状态 0xA9 = 1)
+    [[patch.be32]]
+        address = 0x82187F5C
+        value = 0x60000000 # nop                 (跳过原版的 stw r10, 0xBC(r11)，完整保留状态标志位)
+
+    # 2. 移动速度倍率 4x (IDA 0x82133E08 ~ 0x82133E1C 减去 0x6E00 = 0x8212D008 ~ 0x8212D01C)
+    #    仅对上述 0xA9 == 1 的玩家生效，直接构造 40.0f 返回（零重定位干扰，不污染共享常量池）
+    #    [其他倍率可选] 3x (32.0f): 0x3D604200 | 2.5x (28.0f): 0x3D6041E0
+    [[patch.be32]]
+        address = 0x8212D008
+        value = 0x3D604220 # lis  r11, 0x4220        (40.0f = 4倍速)
+    [[patch.be32]]
+        address = 0x8212D00C
+        value = 0x91610010 # stw  r11, 0x10(r1)
+    [[patch.be32]]
+        address = 0x8212D010
+        value = 0xC0210010 # lfs  f1, 0x10(r1)
+    [[patch.be32]]
+        address = 0x8212D014
+        value = 0x38210070 # addi r1, r1, 0x70
+    [[patch.be32]]
+        address = 0x8212D018
+        value = 0x8181FFF8 # lwz  r12, -8(r1)
+    [[patch.be32]]
+        address = 0x8212D01C
+        value = 0x7D8803A6 # mtlr r12 (紧接 0x8212D020 原有的 blr 返回)
+		
+# ==============================================================================
+# 【过关结算金钱倍率】倍率自定义调整说明：
+# 修改下方每组第一行 value 末尾的 2 位十六进制数值（默认 32 = 50倍）：
+#   0x1D29000A  ->  10 倍 (0x0A = 10)
+#   0x1D290014  ->  20 倍 (0x14 = 20)
+#   0x1D290019  ->  25 倍 (0x19 = 25)
+#   0x1D290032  ->  50 倍 (0x32 = 50，当前默认)
+#   0x1D290064  -> 100 倍 (0x64 = 100)
+# * 注：倍率上限支持到 0x7FFF (32767倍)，每组第二行已锁定最高金额 9,961,472 防止溢出。
+# ==============================================================================
+
+# 1. 1P & 2P 常规过关结算金钱倍率
+[[patch]]
+    name = "1P & 2P Post-Battle Gold Multiplier"
+    author = "cr7xiaoyu"
+    is_enabled = true
+
+    [[patch.be32]]
+        address = 0x821D9B34 # 原 0x821E0934 (-0x6E00): mulli r9, r9, 50 (修改末尾 32 调整倍率: 0A=10倍, 19=25倍, 32=50倍)
+        value = 0x1D290032
+    [[patch.be32]]
+        address = 0x821D9B3C # 原 0x821E093C (-0x6E00): lis r10, 0x98 (上限 9,961,472 保护防溢出)
+        value = 0x3D400098
+
+# 2. 无限城模式过关结算金钱倍率
+[[patch]]
+    name = "Infinite Castle Post-Battle Gold Multiplier"
+    author = "cr7xiaoyu"
+    is_enabled = true
+
+    [[patch.be32]]
+        address = 0x821DB6A4 # 原 0x821E24A4 (-0x6E00): mulli r9, r9, 50 (修改末尾 32 调整倍率: 0A=10倍, 19=25倍, 32=50倍)
+        value = 0x1D290032
+    [[patch.be32]]
+        address = 0x821DB6A8 # 原 0x821E24A8 (-0x6E00): lis r10, 0x98 (上限 9,961,472 保护防溢出)
+        value = 0x3D400098
+		
+[[patch]]
+    name = "护卫武将获得经验 50 倍 (自带 150,000 满级经验上限防溢出)"
+    desc = "修改末尾 4 位十六进制调整倍率: 000A=10倍 | 0014=20倍 | 0032=50倍 | 0064=100倍 (原版: 0x78880020)"
+    author = "cr7xiaoyu"
+    is_enabled = true
+
+    [[patch.be32]]
+        address = 0x82185D3C
+        value = 0x1D040032
+		
+[[patch]]
+    name = "关卡掉落武器生成8孔7空槽外加1条有效随机属性(+20且必带元素)"
+    desc = "8孔全开，仅随机生成1条有效属性，数值强制20，必带元素特效，其他7孔为空槽"
+    author = "cr7xiaoyu"
+    is_enabled = true
+
+    # 掉落武器 100% 必带随机元素特效（跳过 0=无属性）| 原VA: 0x8218D7F8 - 0x6E00
+    [[patch.be32]]
+        address = 0x821869F8
+        value = 0x39400001
+
+    # 关卡掉落武器强制 8 孔全开 | 原VA: 0x8218D898 - 0x6E00
+    [[patch.be32]]
+        address = 0x82186A98
+        value = 0x3AE00008
+
+    # 属性生成循环限制为 1 轮（仅出 1 条技能属性，留 7 空孔）| 原VA: 0x8218D990 - 0x6E00
+    [[patch.be32]]
+        address = 0x82186B90
+        value = 0x2F0B0001
+
+    # 唯一技能属性数值锁定 +20 | 原VA: 0x8218DAEC - 0x6E00
+    [[patch.be32]]
+        address = 0x82186CEC
+        value = 0x60000000
+		
+[[patch]]
+    name = "锻造屋随机属性+20"
+    desc = "锻造屋生成的新属性的属性值为20，如需绑定全一样的属性，请开启第三条的选项B并注释选项A"
+    author = "cr7xiaoyu"
+    is_enabled = true
+
+    # 1. 同一属性允许最多填满全部 8 个槽位（解除原版最多 3 个同名属性的限制）
+    [[patch.be32]]
+        address = 0x821EAD60
+        value = 0x2B0A0009
+
+    # 2. 铁匠铺锻造数值强制 +20
+    [[patch.be32]]
+        address = 0x821EAEA8
+        value = 0x60000000
+
+    # 3. 锻造新增属性控制（按需二选一，默认保留原版随机）
+    # [选项 A] 保持原版随机属性（如需还原随机时启用）：
+    [[patch.be32]]
+        address = 0x821EAD54
+        value = 0x5499063E
+
+    # [选项 B] 锻造新增属性强制为指定类型（启用时请注释掉选项 A，并将 XX 改为 00~09 对应的属性编号）：
+    # [[patch.be32]]
+    #     address = 0x821EAD54
+    #     value = 0x3B200002 # 示例 0x02；范围 0x00 ~ 0x09
+
+[[patch]]
+    name = "自由模式全关卡解锁（含全角色外传）"
+    desc = "解锁所有未通关关卡及无双演武限定/外传关卡，可在自由模式任意选择"
+    author = "cr7xiaoyu"
+    is_enabled = true
+
+    # 1. 绕过关卡未解锁/未通关判定 (0x822F039C: beq -> nop)
+    [[patch.be32]]
+        address = 0x822F039C
+        value = 0x60000000
+
+    # 2. 绕过自由模式黑名单表循环跳出 (0x822F03BC: b -> nop)
+    [[patch.be32]]
+        address = 0x822F03BC
+        value = 0x60000000
+
+    # 3. 绕过自由模式黑名单表二次边界判定 (0x822F03C4: bge -> nop)
+    [[patch.be32]]
+        address = 0x822F03C4
+        value = 0x60000000
