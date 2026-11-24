@@ -1,0 +1,104 @@
+// 100% Steal v1.2 (只要敌方技能是1P未拥有的，击杀必偷且无视所有等级/稀有度限制)
+patch=1,EE,201AB848,extended,14400066
+patch=1,EE,201ABD7C,extended,10000003
+
+// Buff Active
+// 02=Atk 04=Def 08=Musou 10=Speed
+patch=1,EE,204FA114,extended,0000001E  //0000001E = ALL Buff
+
+// Buff Time
+// Buff Def Time
+patch=1,EE,204FA120,extended,0000FF7F
+// Buff Atk Time
+patch=1,EE,204FA11C,extended,0000FF7F
+// Buff Musou Time
+patch=1,EE,204FA124,extended,0000FF7F
+// Buff Speed Time
+patch=1,EE,204FA128,extended,0000FF7F
+
+// ATK-DEF Buff 10x
+// 10x=3C064120 | 5x=3C0640A0 | 4x=3C064080
+patch=1,EE,201AE3F4,extended,3C064120
+
+// Speed 4x
+// 4x=3C034220 | 5x=3C034248 | 6x=3C034270
+patch=1,EE,20162328,extended,3C034220
+
+// 虎乱3bug修复，方式2选1，不能同时使用
+// 方式1：复用红莲属性
+//patch=1,EE,20218B8C,extended,12220006
+// 方式2：修罗属性保持比例扣减但叠加原始普通伤害
+//patch=1,EE,20218C7C,extended,46000828
+//patch=1,EE,20218C80,extended,4600A500
+
+// 柴田胜家 R1+三角 特殊强化技能持续时间极大化 (32767 帧)
+//patch=1,EE,10496FA2,extended,0000FF7F
+
+// 武器锻造相关
+// 同一属性允许最多填满槽位
+patch=1,EE,202D72C8,extended,28010009
+
+// 锻造新增属性强制为指定类型
+//patch=1,EE,202D72BC,extended,24160002  //改02为其他数值就可以变换类型
+// 改回随机属性
+patch=1,EE,202D72BC,extended,309600FF
+
+// 锻造数值强制+99
+patch=1,EE,202D7658,extended,00000000
+patch=1,EE,202D765C,extended,00000000
+patch=1,EE,202D7660,extended,00000000
+patch=1,EE,202D7668,extended,00000000
+patch=1,EE,202D7670,extended,24040063
+
+// 解除UI超过20不显示数字的限制
+patch=1,EE,2030C190,extended,00000000
+
+// 关卡掉落武器强制8孔全开
+patch=1,EE,201AC830,extended,24050008
+patch=1,EE,201AC834,extended,A3A50072
+// 属性生成循环限制为1轮
+patch=1,EE,201AC85C,extended,29010001
+// 唯一属性数值锁定+20
+patch=1,EE,201AC150,extended,24150014  //+99改成241500063
+
+// 掉落武器生成的所有词条数值强制为+20
+//patch=1,EE,201AC958,extended,240B0014
+//patch=1,EE,201AC95C,extended,00000000
+//patch=1,EE,201AC960,extended,00000000
+
+// 8个属性数值写入前直接强制+99
+//patch=1,EE,201AC150,extended,24150063
+//patch=1,EE,201AC17C,extended,24080063 
+//patch=1,EE,201AC1A4,extended,24060063
+//patch=1,EE,201AC1D0,extended,24060063
+//patch=1,EE,201AC200,extended,24060063
+//patch=1,EE,201AC230,extended,24060063
+//patch=1,EE,201AC260,extended,24060063
+//patch=1,EE,201AC290,extended,24040063
+
+//借用https://www.bilibili.com/read/readlist/rl504527
+//護衛獲得勲功
+patch=1,EE,201AB274,extended,00000000
+
+patch=1,EE,202A8284,extended,10000001
+
+patch=1,EE,202A82A4,extended,10000005
+
+
+// 1. 激活本传联动（MIXJOY）状态
+//patch=1,EE,203AEC80,extended,00000001
+
+// 2. 解锁全 32 名武将（包含森兰丸、阿国）
+patch=1,EE,204F8CAC,extended,FFFFFFFF
+
+// 3. 选人列表放行阿国（ID 6），套用 0x05 号剧本（阿市）
+patch=1,EE,2029FCA4,extended,24080005
+
+// 4. 选人列表放行森兰丸（ID 12），套用 0x01 号剧本（前田庆次）
+patch=1,EE,2029FCD4,extended,24080001
+
+// 5. 选人确认时为阿国写入有效剧本 ID（0x05），修复选关越界与进关黑屏
+patch=1,EE,2028B6DC,extended,24050005
+
+// 6. 选人确认时为森兰丸写入有效剧本 ID（0x01），修复选关越界与进关黑屏
+patch=1,EE,2028B70C,extended,24050001

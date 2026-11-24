@@ -1,0 +1,15 @@
+gametitle=Contra - Shattered Soldier [SLUS-20306] (U)
+
+// 1P 99条命
+patch=1,EE,109128C0,extended,00000063
+// 2P 99条命
+patch=1,EE,109128D0,extended,00000063
+// 1P 无敌
+patch=1,EE,00912584,extended,000000FF
+// 2P 无敌
+patch=1,EE,00912734,extended,000000FF
+// 无限接关
+patch=1,EE,10912534,extended,00000063
+// 1P & 2P 空中无限跳 (Infinite Jump - SLUS-20306)
+patch=1,EE,204327E4,extended,00000000
+patch=1,EE,2043BD7C,extended,10000006
