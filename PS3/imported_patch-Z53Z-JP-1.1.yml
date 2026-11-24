@@ -1,0 +1,72 @@
+Version: 1.2
+
+PPU-e347f88f2141cb0a0abd82aebce1e6faa1c9295f:
+  "SW3Z 1P Independent ATK/DEF/SPD Multipliers (In-Place Safe)":
+    Games:
+      "Sengoku Musou 3 Z":
+        BLJM60313: [ All ]
+    Author: "cr7xiaoyu"
+    Notes: "仅对 1P 生效：攻击倍率、防御倍率、移动速度倍率三项独立可调，全模式稳定通用"
+    Patch Version: 5.1
+    Patch:
+      # 1. 精确比对 1P Buff 实体基址 (0x46ADC35C)，非 1P 跳往原版清理分支
+      - [ be32, 0x000BA900, 0x3C8046AD ] # lis r4, 0x46AD
+      - [ be32, 0x000BA904, 0x6084C35C ] # ori r4, r4, 0xC35C
+      - [ be32, 0x000BA908, 0x7F832040 ] # cmplw cr7, r3, r4
+      - [ be32, 0x000BA90C, 0x409E0098 ] # bne cr7, 0x000BA9A4
+
+      # 2. 独立调节三项倍率（只需修改对应行末尾的 4 位 Hex 数值）
+      - [ be32, 0x000BA910, 0x3C804180 ] # 【攻击倍率】当前 16.0x (改末尾 4180)
+      - [ be32, 0x000BA914, 0x90830004 ] # stw r4, 0x04(r3)
+      - [ be32, 0x000BA918, 0x3C804180 ] # 【防御倍率】当前 16.0x (改末尾 4180)
+      - [ be32, 0x000BA91C, 0x90830008 ] # stw r4, 0x08(r3)
+      - [ be32, 0x000BA920, 0x3CA040A0 ] # 【移动倍率】当前 5.0x  (改末尾 40A0)
+      - [ be32, 0x000BA924, 0x90A3000C ] # stw r5, 0x0C(r3)
+
+      # 3. 持续时间锁定 30.0 秒并安全返回
+      - [ be32, 0x000BA928, 0x3CC041F0 ] # lis r6, 0x41F0 (30.0f)
+      - [ be32, 0x000BA92C, 0x90C30014 ] # stw r6, 0x14(r3) (锁定攻击时间)
+      - [ be32, 0x000BA930, 0x90C30018 ] # stw r6, 0x18(r3) (锁定防御时间)
+      - [ be32, 0x000BA934, 0x90C3001C ] # stw r6, 0x1C(r3) (锁定移动时间)
+      - [ be32, 0x000BA938, 0x4E800020 ] # blr
+
+  "武器防具升级素材不减":
+    Games:
+      "Sengoku Musou 3 Z":
+        BLJM60313: [ All ]
+    Author: "cr7xiaoyu"
+    Notes: "武器防具升级素材不减"
+    Patch Version: 1.0
+    Patch:
+      # 1. 消耗素材时不减 (0x000E4D6C: stw -> nop)
+      - [ be32, 0x000E4D6C, 0x60000000 ]
+
+  "素材8倍获取":
+    Games:
+      "Sengoku Musou 3 Z":
+        BLJM60313: [ All ]
+    Author: "cr7xiaoyu"
+    Notes: "素材8倍获取"
+    Patch Version: 1.0
+    Patch:
+      # 2. 原地腾出指令槽位实现素材成倍获取 (以 8 倍为例) 
+      # 2x=0x54A5083C | 4x=0x54A5103A | 8x=0x54A51838 | 10x=0x1CA5000A | 16x=0x54A52036
+      - [ be32, 0x000E4D20, 0x5484103A ] # slwi  r4, r4, 2       (保持不变)
+      - [ be32, 0x000E4D24, 0x38846F90 ] # addi  r4, r4, 0x6F90  (保持不变)
+      - [ be32, 0x000E4D28, 0x7C632214 ] # add   r3, r3, r4      (提前计算地址，替代冗余的 extsw)
+      - [ be32, 0x000E4D2C, 0x80030004 ] # lwz   r0, 4(r3)       (提前读取当前数量)
+      - [ be32, 0x000E4D30, 0x54A51838 ] # slwi  r5, r5, 3       (多出来的槽位：获得数量 r5 * 8)
+      - [ be32, 0x000E4D34, 0x7C002A14 ] # add   r0, r0, r5      (加上翻倍后的数量，后续 999 上限判断原封不动)
+
+  "自由模式全关卡解锁":
+    Games:
+      "Sengoku Musou 3 Z":
+        BLJM60313: [ All ]
+    Author: "cr7xiaoyu"
+    Notes: "自由模式全关卡解锁"
+    Patch Version: 1.0
+    Patch:
+      # 1. 绕过关卡未解锁/未通关判定 (0x001E2EEC: beq cr7, loc_1E2F10 -> nop)
+      - [ be32, 0x001E2EEC, 0x60000000 ]
+      # 2. 绕过模拟演武关卡类型/黑名单过滤 (0x001E2F04: bgt cr7, loc_1E2F10 -> nop)
+      - [ be32, 0x001E2F04, 0x60000000 ]
