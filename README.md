@@ -19,3 +19,5 @@ PS2 PS3 XBOX360 cheats
 - [高达无双1SP 日版/汉化版](PS2/SLPM-66940_6351C057.pnach)
 - [真·三国无双4 帝国 日版/汉化版](PS2/SLPM-66343_DB26653A.pnach)
 - [战国无双2猛将传 日版/汉化版](PS2/SLPM-67014_6DEAEFEA.pnach)
+- [真三国无双1 日版](PS2/SLPM-62005_5A63669B.pnach)
+- [真三国无双1 繁中](PS2/SLPM-62005_04A4489E.pnach)
