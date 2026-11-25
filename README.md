@@ -9,6 +9,7 @@ PS2 PS3 XBOX360 cheats
 - [战国无双2猛将传 汉化版 (1.3)](PS3/imported_patch-Z52M-JP-1.3.yml)
 - [战国无双2猛将传 汉化版 (1.5)](PS3/imported_patch-Z52M-JP-1.5.yml)
 - [战国无双3Z 汉化版 (1.1)](PS3/imported_patch-Z53Z-JP-1.1.yml)
+- [战国无双3Z 汉化版 (1.2)](PS3/imported_patch-Z53Z-JP-1.2.yml)
 
 ## PS2
 - [真魂斗罗 日版](PS2/SLPM-62247_0AE42E34.pnach)
